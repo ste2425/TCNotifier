@@ -1,0 +1,84 @@
+.nav.steps {
+    display: inline-flex;
+    padding: 10px;
+    border: none;
+}
+
+/* Add line inbetween circles */
+.nav.steps .nav-item .nav-link:before{
+    content: '';
+    height: 1px;
+    display: block;
+    background-color: var(--gray);
+    width: 100%;
+    position: absolute;
+    top: calc(1.5rem / 2 + 5px);
+    z-index: 1;
+}
+
+.nav.steps .nav-item:first-child .nav-link:before {
+    content: '';
+    width: 50%;
+    left: 50%;
+}
+
+.nav.steps .nav-item:last-child .nav-link:before {
+    content: '';
+    width: 50%;
+    left: 0%;
+}
+
+/* Add step colours for states */
+.nav.steps .nav-item .nav-link.step-visited .step-circle, .nav.steps .nav-item .nav-link.step-visited .step-text {
+    color: var(--success);
+    border-color: var(--success);
+}
+
+.nav.steps .nav-item .nav-link.active .step-circle, .nav.steps .nav-item .nav-link.active .step-text {
+    color: var(--blue);
+    border-color: var(--blue);
+}
+
+.nav.steps .nav-item .nav-link.step-error .step-circle, .nav.steps .nav-item .nav-link.step-error .step-text {
+    color: var(--danger);
+    border-color: var(--danger);
+}
+
+.nav.steps .nav-link {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 5px 10px 0 10px;
+    flex-direction: column;
+    border: none;
+    min-width: 5rem;
+}
+
+.nav.steps .nav-link .step-circle {
+    border-radius: 50%;
+    background-color: white;
+    height: 1.5rem;
+    width: 1.5rem;
+    color: white;
+    position: relative;
+    border: 1px solid var(--gray);
+    color: var(--gray);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 5;
+}
+
+.nav.steps .nav-link .step-text {
+    color: black;
+}
+
+.nav.steps .nav-link.active {
+    border: none;
+}
+
+.steps-buttons {
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+}

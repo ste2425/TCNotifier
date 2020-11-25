@@ -1,0 +1,32 @@
+{
+  "name": "tc-notifier",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "mocha",
+    "pg": "electron-packager ./ tc-notifier --all",
+    "pgh": "electron-packager --help",
+    "c": "rm C:/Users/scooper/AppData/Roaming/tc-notifier/config.json"
+  },
+  "author": "sc",
+  "license": "",
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "electron": "^10.1.5",
+    "mocha": "^8.2.1",
+    "sinon": "^9.2.1"
+  },
+  "dependencies": {
+    "axios": "^0.21.0",
+    "bootstrap": "^4.5.3",
+    "bootstrap-steps": "^1.0.3",
+    "bootstrap.native": "^3.0.13",
+    "electron-packager": "^15.1.0",
+    "electron-prompt": "^1.6.0",
+    "electron-store": "^6.0.1",
+    "keytar": "^7.0.0",
+    "open-iconic": "^1.1.1"
+  }
+}

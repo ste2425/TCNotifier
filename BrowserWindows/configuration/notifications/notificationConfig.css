@@ -1,0 +1,74 @@
+html, body {
+    height: 100%;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+ul {
+    margin: 0 auto;
+}
+
+ul, li {
+    list-style: none;
+}
+
+.hide {
+    display: none;
+}
+
+.toggle {
+    cursor: pointer;
+}
+
+.body-content {
+    flex: 1;
+    overflow: auto;
+    border-top: 1px solid var(--gray);
+    border-bottom: 1px solid var(--gray);
+}
+
+
+.project > span:first-child {
+    display: inline-flex;
+    align-items: center;
+}
+
+.project .toggle .oi {
+    margin-right: 10px;
+}
+
+.project .project-name {
+    margin: 0px;
+}
+
+.project .project-name small {
+    display: inline-block;
+    padding-left: 10px;
+}
+
+.data-users li {
+    padding: 5px;
+}
+
+.project .children li label, .data-users label {
+    margin: 0;
+    width: 100%;
+    cursor: pointer;
+}
+
+.project .children li.build-type:hover, .data-users li:hover {
+    background-color: rgba(0,0,0,.075);
+}
+
+.project .children li.build-type, .data-users li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.project .children li.build-type {
+    margin-bottom: .5rem;
+}

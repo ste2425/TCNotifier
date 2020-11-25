@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Projects</title>
+        <script type="module" src="notificationConfig.js"></script>
+        <script src="../../../node_modules/bootstrap.native/dist/bootstrap-native.min.js"></script>
+        <link rel="stylesheet" href="../../../node_modules/bootstrap/dist/css/bootstrap.min.css">
+        <link rel="stylesheet" href="../../tabs-steps.css">
+        <link href="../../../node_modules/open-iconic/font/css/open-iconic-bootstrap.css" rel="stylesheet">
+        <link href="notificationConfig.css" rel="stylesheet">
+    </head>
+    <body>   
+        <template id="project-template">
+            <div class="project">
+                <span class="toggle">
+                    <span class="oi oi-chevron-right"></span>
+                    <h3 class="project-name">
+                        <span class="text"></span>
+                        <small class="text-muted"></small>
+                    </h3>
+                </span>
+                <span class="project-content hide">
+                    <div class="build">
+                        <hr>
+                        <ul></ul>
+                        <hr>
+                    </div>
+                    <div class="children">
+                        <ul></ul>
+                    </div>
+                </span>
+            </div>
+        </template>
+
+        <template id="user-template">
+            <li>
+                <label for></label>
+                <input data-user-id="" class="filter-on-user" type="checkbox">
+            </li>
+        </template>
+
+        <ul id="tabs" class="nav nav-tabs steps" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active disabled" id="profiles-tab" data-toggle="tab" href="#profiles" role="tab" aria-controls="home" aria-selected="true">
+                    <span class="step-circle">1</span>
+                    <Span class="step-text">Select Projects</Span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link disabled" id="users-tab" data-toggle="tab" href="#users" role="tab" aria-controls="profile" aria-selected="false">
+                    <span class="step-circle">2</span>
+                    <Span class="step-text">Select Users</Span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link disabled" id="status-tab" data-toggle="tab" href="#status" role="tab" aria-controls="contact" aria-selected="false">
+                    <span class="step-circle">3</span>
+                    <Span class="step-text">Select Build Status</Span>
+                </a>
+            </li>
+        </ul>
+        <div class="body-content">
+            <div class="tab-content container" id="myTabContent">
+                <div class="tab-pane show active" id="profiles" role="tabpanel" aria-labelledby="profiles-tab">
+                    <div class="select-projects">
+                        <h2 class="mt-2">Select Projects</h2>
+                        <p>Build notifications will be filtered to the projects selected. Only projects with build types configured can be selected.</p>
+                        <div class="alert alert-info">
+                            Due to the way TeamCity's API works each selected project will mean an individual API call asking for builds in that project.
+                            This could result in a delay inbetween each request of builds if lots of projects are selected.
+                        </div>
+                        <div id="project-validation-warning" class="alert alert-danger hide" role="alert">
+                          Please select at least one project to filter on.
+                        </div>
+                        <div class="data"></div>
+                    </div>
+                </div>
+                <div class="tab-pane" id="users" role="tabpanel" aria-labelledby="users-tab">
+                    <div class="select-users">
+                        <h2 class="mt-2">Select Users</h2>
+                        <p>Build notifications will be filtered down based on who triggered the build.</p>
+                        <p>Selected multiple users does <em>not</em> result in extra API calls like multiple projects do.</p>
+                        <div id="users-validation-warning" class="alert alert-danger hide" role="alert">
+                          Please select at least one user to filter on.
+                        </div>
+                        <div class="data-users">
+                            <ul></ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane" id="status" role="tabpanel" aria-labelledby="status-tab">
+                    <div class="select-status">
+                        <h2 class="mt-2">Select Status</h2>
+                        <p>When builds transition from running to either success or error a notification will be raised (if other conditions such as project and triggering user are met).</p>
+                        <p>Filter to only success states, failed states or both.</p>
+                        <div class="data-status">
+                            <select>
+                                <option value="both">Success and failure</option>
+                                <option value="success">Success only</option>
+                                <option value="failed">Failure only</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>     
+            </div>  
+        </div>
+        <div class="container steps-buttons">       
+            <button class="btn btn-secondary previous">Previous</button>
+            <button class="btn btn-primary next">Next</button>
+            <button class="save btn btn-primary hide">Save</button>
+        </div>
+    </body>
+</html>
