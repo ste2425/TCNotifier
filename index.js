@@ -86,7 +86,7 @@ async function getProjects() {
 
 // message received from the preload script
 const preloadMessageHandlers = {
-    saveBuildConfig(e, data) {
+    saveBuildConfig(data) {
         store.set({
             buildConfig: data
         });
@@ -108,7 +108,7 @@ const preloadMessageHandlers = {
 
         emitMessageToWindow('userList', mappedUsers);
     },
-    async saveConfig(e, data) {
+    async saveConfig(data) {
         const { tcURL, tcToken } = data;
 
         await keytar.setPassword('tc-api-url', 'tcnotifier', tcURL);
@@ -156,8 +156,10 @@ async function onReady() {
 
     window.webContents.toggleDevTools();
 
-    for (let handler in preloadMessageHandlers)
-        ipcMain.on(handler, preloadMessageHandlers[handler]);
+    ipcMain.on('message', (e, { channel, data }) => {        
+        if (channel in preloadMessageHandlers)
+            preloadMessageHandlers[channel](data);
+    });
 
     const loadedConfig = await loadConfig();
 
@@ -179,7 +181,10 @@ app.on('ready', onReady);
 
 function emitMessageToWindow(channel, data) {
     if (window)
-        window.webContents.send(channel, data);
+        window.webContents.send('message', {
+            channel,
+            data
+        });
 }
 
 async function loadConfig() {

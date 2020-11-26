@@ -1,13 +1,12 @@
-
 /**
  * Emit a event from the render thread to the preload
  * @param {string} channel 
- * @param {any} [payload] 
+ * @param {any} [data] 
  */
-export function emitToPreload(channel, payload) {
+export function emitToPreload(channel, data) {
     window.postMessage({
         channel,
-        payload
+        data
     }, '*');
 } 
 
@@ -18,10 +17,10 @@ export function registerHandlers(handlers) {
     window.addEventListener('message', (e) => {
         const {
             channel,
-            payload
+            data
         } = e.data;
 
         if (channel in handlers)
-            handlers[channel](payload);
+            handlers[channel](data);
     });
 }

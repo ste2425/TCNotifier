@@ -5,21 +5,6 @@ const axios = require('axios').default.create({
     })
   });
 
-
-// https://teamcity.cluster.build.ngiris.io/app/rest/builds?locator=project:(id:CascadeHr_Legacy),buildType:(id:CascadeHr_Legacy_Cascade)
-
-  //https://teamcity.cluster.build.ngiris.io/app/rest/buildTypes?locator=affectedProject:(id:CascadeHr_Legacy)&fields=buildType(id,name,builds($locator(running:false,canceled:false,count:1),build(number,status,statusText)))
-//https://teamcity.cluster.build.ngiris.io/app/rest/buildTypes?locator=affectedProject:(id:CascadeHr_Legacy)&fields=buildType(id,name,branchName,builds($locator(running:false,canceled:false,count:1),build(number,status,statusText,branchName)))
-// eyJ0eXAiOiAiVENWMiJ9.enhHd1lESHp3N3R3MU84SWFrTEhnanh5cTBV.M2Q3MjgzOGMtMWY0ZC00OGJmLTk5MjEtMTIxYWUyNTNkZmI3
-// https://teamcity.cluster.build.ngiris.io/
-
-// https://teamcity.cluster.build.ngiris.io/app/rest/projects?locator=selectedByUser:current&fields=count,project(id,parentProjectId,buildTypes(count,buildType(id),$locator(selectedByUser:current)))
-
-//https://teamcity.cluster.build.ngiris.io/app/rest/builds/?locator=project:(id:CascadeHr_Novo),count:20
-//https://teamcity.cluster.build.ngiris.io/app/rest/projects?locator=selectedByUser:current&fields=count,project(id,parentProjectId,projects(count,project(id),$locator(selectedByUser:current)),buildTypes(count,buildType(id),$locator(selectedByUser:current)))
-
-// https://teamcity.cluster.build.ngiris.io/app/rest/builds?locator=buildType:(id:CascadeHr_Legacy_Cascade),running:any,count:20
-
 const paths = {
     projects: 'app/rest/projects',
     buildTypes: 'app/rest/buildTypes',

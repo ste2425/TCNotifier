@@ -11,44 +11,30 @@
 
 const { ipcRenderer } = require('electron');
 
-// Handlers received from renderer thread
-const messageHandlers = {
-    saveConfig: (data) => ipcRenderer.send('saveConfig', data),
-    getProjects: () => ipcRenderer.send('getProjects'),
-    getUsers: () => ipcRenderer.send('getUsers'),
-    saveBuildConfig: (data) => ipcRenderer.send('saveBuildConfig', data)
-}
-
-// Handlers received from main thread
-const ipcHandlers = {
-    projectList: (e, data) => emitToRenderer('projectList', data),
-    saveConfigResponse: () => emitToRenderer('saveConfigResponse'),
-    userList: (e, data) => emitToRenderer('userList', data),
-    buildNotification: (e, data) => emitToRenderer('buildNotification', data)
-}
-
-function onLoaded() {
-    // Listen to messages coming from renderer thread
+function onLoad() {
     window.addEventListener('message', (e) => {
         const {
             channel,
-            payload
+            data
         } = e.data;
 
-        if (channel in messageHandlers)
-            messageHandlers[channel](payload);
+        ipcRenderer.send('message', {
+            channel,
+            data
+        });
     });
 
-    // Listen to message from main thread
-    for (let handler in ipcHandlers)
-        ipcRenderer.on(handler, ipcHandlers[handler]);
+    ipcRenderer.on('message', (e, payload) => {
+        const { 
+            channel,
+            data
+        } = payload;
+
+        window.postMessage({
+            channel,
+            data
+        }, '*');
+    });
 }
 
-process.once('loaded', onLoaded);
-
-function emitToRenderer(channel, payload) {
-    window.postMessage({
-        channel,
-        payload
-    }, '*');
-}
+process.once('loaded', onLoad);
