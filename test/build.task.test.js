@@ -224,6 +224,8 @@ describe('Build Task', () => {
                 ]
             };
 
+            const eventSpy = sinon.spy();
+
             config.selectedProjects.push(...[
                 projectOneTestData.id,
                 projectTwoTestData.id
@@ -233,30 +235,150 @@ describe('Build Task', () => {
             buildsStub.onCall(0).resolves(projectOneTestData.builds);
             buildsStub.onCall(1).resolves(projectTwoTestData.builds);
 
-            taskToTest.on(buildWatcherEvents.buildCheck, function(data) {
-                const buildIds = [...data.started, ...data.running, ...data.run]
-                    .map(x => x.id);
-
-                expect(buildIds).to.eql([100, 200]);
-            });
+            taskToTest.on(buildWatcherEvents.buildCheck, eventSpy);
 
             await taskToTest.checkBuilds();
+
+            const eventData = eventSpy.firstCall.args[0];
+
+            const buildIds = [...eventData.started, ...eventData.running, ...eventData.run]
+                .map(x => x.id);
+
+            expect(buildIds).to.eql([100, 200]);
         });
 
         it('should group builds as run that are no longer running and were being tracked', async () => {
-            
+            const buildsToTrack = [
+                getBuild(1, 'running', 'test1'),
+                getBuild(2, 'running', 'test2'),
+                getBuild(3, 'running', 'test3'),
+                getBuild(4, 'running', 'test4')
+            ];
+            const buildsFinished = [
+                getBuild(1, 'finished', 'test1'),
+                getBuild(2, 'running', 'test2'),
+                getBuild(3, 'finished', 'test3'),
+                getBuild(4, 'finished', 'test4')
+            ];
+
+            const eventSpy = sinon.spy();
+
+            config.selectedProjects.push(1);
+            config.selectedUsers.push(...['test1', 'test2', 'test3']);
+
+            taskToTest.on(buildWatcherEvents.buildCheck, eventSpy);
+
+            buildsStub.onCall(0).resolves(buildsToTrack);
+            buildsStub.onCall(1).resolves(buildsFinished);
+
+            // First run tracks running builds that were not already being tracked.
+            await taskToTest.checkBuilds();
+
+            // Second run marks finished builds being tracked as run
+            await taskToTest.checkBuilds();
+
+            const calledWith = eventSpy.getCall(1).args[0];
+
+            expect(calledWith.run.map(x => x.id)).to.eql([1,3]);
         });
 
         it('should group builds as started that are running and not being tracked', async () => {
+            const buildsToTrack = [
+                getBuild(1, 'running', 'test1'),
+                getBuild(2, 'running', 'test2'),
+                getBuild(3, 'finished', 'test3'),
+                getBuild(4, 'running', 'test4')
+            ];
 
+            const eventSpy = sinon.spy();
+
+            config.selectedProjects.push(1);
+            config.selectedUsers.push(...['test1', 'test2', 'test3']);
+
+            taskToTest.on(buildWatcherEvents.buildCheck, eventSpy);
+
+            buildsStub.resolves(buildsToTrack);
+
+            await taskToTest.checkBuilds();
+
+            const calledWith = eventSpy.firstCall.args[0];
+
+            expect(calledWith.started.map(x => x.id)).to.eql([1,2]);
         });
 
-        it('should track builds that are running and not being tracked', async () => {
+        it('should group builds as running that are running and are being tracked', async () => {
+            const buildsToTrack = [
+                getBuild(1, 'running', 'test1'),
+                getBuild(2, 'running', 'test2'),
+                getBuild(3, 'running', 'test3'),
+                getBuild(4, 'finished', 'test4')
+            ];
+            const buildsFinished = [
+                getBuild(1, 'running', 'test1'),
+                getBuild(2, 'running', 'test2'),
+                getBuild(3, 'finished', 'test3'),
+                getBuild(4, 'finished', 'test4')
+            ];
 
+            const eventSpy = sinon.spy();
+
+            config.selectedProjects.push(1);
+            config.selectedUsers.push(...['test1', 'test2', 'test3', 'test4']);
+
+            taskToTest.on(buildWatcherEvents.buildCheck, eventSpy);
+
+            buildsStub.onCall(0).resolves(buildsToTrack);
+            buildsStub.onCall(1).resolves(buildsFinished);
+
+            // First run tracks running builds that were not already being tracked.
+            await taskToTest.checkBuilds();
+
+            // Second run is the tested result using builds already being tracked
+            await taskToTest.checkBuilds();
+
+            const calledWith = eventSpy.getCall(1).args[0];
+
+            expect(calledWith.running.map(x => x.id)).to.eql([1,2]);
         });
 
-        it('shou;d group builds as running that are running and are being tracked', async () => {
+        it('should return correct build data for started, running and run builds simultaneously', async () => {
+            const buildsToTrack = [
+                getBuild(1, 'running', 'test1'),
+                getBuild(2, 'running', 'test2'),
+                getBuild(3, 'running', 'test3'),
+                getBuild(4, 'finished', 'test4')
+            ];
+            const buildsFinished = [
+                getBuild(1, 'running', 'test1'),
+                getBuild(2, 'finished', 'test2'),
+                getBuild(3, 'running', 'test3'),
+                getBuild(4, 'finished', 'test4'),
+                getBuild(5, 'finished', 'ignoredUser'),
+                getBuild(6, 'running', 'test1'),
+                getBuild(7, 'running', 'test1')
+            ];
 
+            const eventSpy = sinon.spy();
+
+            config.selectedProjects.push(1);
+            config.selectedUsers.push(...['test1', 'test2', 'test3', 'test4']);
+
+            taskToTest.on(buildWatcherEvents.buildCheck, eventSpy);
+
+            buildsStub.onCall(0).resolves(buildsToTrack);
+            buildsStub.onCall(1).resolves(buildsFinished);
+
+            // First run tracks running builds that were not already being tracked.
+            await taskToTest.checkBuilds();
+
+            // Second run is the tested result using builds already being tracked
+            await taskToTest.checkBuilds();
+
+            const calledWith = eventSpy.getCall(1).args[0];
+
+            expect(calledWith.started.map(x => x.id), 'Expecting started builds').to.eql([6, 7]);
+            expect(calledWith.running.map(x => x.id), 'Expecting running builds').to.eql([1,3]);
+            expect(calledWith.run.map(x => x.id), 'Expecting run builds').to.eql([2]);
         });
     });
 });
