@@ -5,16 +5,19 @@
   "main": "index.js",
   "scripts": {
     "start": "electron .",
-    "test": "mocha",
+    "test": "npm run test:main ; npm run test:renderer",
     "pg": "electron-packager ./ tc-notifier --all",
     "pgh": "electron-packager --help",
-    "c": "rm C:/Users/scooper/AppData/Roaming/tc-notifier/config.json"
+    "c": "rm C:/Users/scooper/AppData/Roaming/tc-notifier/config.json",
+    "test:main": "electron-mocha mainTests/**/*.test.js -c",
+    "test:renderer": "echo 'not tested yet'"
   },
   "author": "sc",
   "license": "",
   "devDependencies": {
     "chai": "^4.2.0",
     "electron": "^10.1.5",
+    "electron-mocha": "^9.3.2",
     "mocha": "^8.2.1",
     "sinon": "^9.2.1"
   },

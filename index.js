@@ -8,7 +8,6 @@
 
 const { 
     app,
-    ipcMain,
     BrowserWindow,
     Notification
 } = require('electron');
@@ -16,6 +15,9 @@ const path = require('path');
 const keytar = require('keytar');
 
 const { BuildWatcher, buildWatcherEvents, runningStates } = require('./tasks/build');
+const { emitToAllWindows, events, initializeMessages } = require('./mainMessaging');
+
+initializeMessages();
 
 /** @type {BuildWatcher} */
 let watcher;
@@ -81,64 +83,64 @@ function displayNotifications() {
 async function getProjects() {
     const projects = await client.projects();
     
-    emitMessageToWindow('projectList', projects.data);
+    emitToAllWindows('projectList', projects.data);
 }
 
-// message received from the preload script
-const preloadMessageHandlers = {
-    saveBuildConfig(data) {
-        store.set({
-            buildConfig: data
-        });
+events.on('saveBuildConfig', (data) => {
+    store.set({
+        buildConfig: data
+    });
 
+    displayNotifications();
+});
+
+events.on('getUsers', async () => {
+    const users = await client.getUsers();
+
+    const mappedUsers = await Promise
+        .all(users.map(user => {
+            return client.getUserProperty(user.username, 'plugin:vcs:anyVcs:anyVcsRoot')
+                .then((properties = '') => {
+                    user.vcsUsernames = properties.split('\n');
+
+                    return user;
+                });
+        }));
+
+    emitToAllWindows('userList', mappedUsers);
+});
+
+events.on('saveConfig', async (data) => {
+    const { tcURL, tcToken } = data;
+
+    await keytar.setPassword('tc-api-url', 'tcnotifier', tcURL);
+    await keytar.setPassword('tc-api-token', 'tcnotifier', tcToken);
+    
+    client =  new TeamCity(tcURL);//'https://teamcity.cluster.build.ngiris.io/');
+    client.setToken(tcToken);
+
+    watcher = new BuildWatcher(client, store);
+    setupWatcher();
+
+    if(!store.has('buildConfig'))
+        window.webContents.loadFile('BrowserWindows/configuration/notifications/notificationConfig.html');
+    else
         displayNotifications();
-    },
-    async getUsers() {
-        const users = await client.getUsers();
+});
 
-        const mappedUsers = await Promise
-            .all(users.map(user => {
-                return client.getUserProperty(user.username, 'plugin:vcs:anyVcs:anyVcsRoot')
-                    .then((properties = '') => {
-                        user.vcsUsernames = properties.split('\n');
-
-                        return user;
-                    });
-            }));
-
-        emitMessageToWindow('userList', mappedUsers);
-    },
-    async saveConfig(data) {
-        const { tcURL, tcToken } = data;
-
-        await keytar.setPassword('tc-api-url', 'tcnotifier', tcURL);
-        await keytar.setPassword('tc-api-token', 'tcnotifier', tcToken);
-        
-        client =  new TeamCity(tcURL);//'https://teamcity.cluster.build.ngiris.io/');
-        client.setToken(tcToken);
-
-        watcher = new BuildWatcher(client, store);
-        setupWatcher();
-
-        if(!store.has('buildConfig'))
-            window.webContents.loadFile('BrowserWindows/configuration/notifications/notificationConfig.html');
-        else
-            displayNotifications();
-    },
-    async getProjects () {
-        try {
-            await getProjects();
-        } catch(error) {      
-            if ('response' in error) {
-                console.log(error.response.data);
-                console.log(error.response.status);
-                console.log(error.response.headers);
-            } else {
-                console.log(error);
-            }
+events.on('getProjects', async () => {
+    try {
+        await getProjects();
+    } catch(error) {      
+        if ('response' in error) {
+            console.log(error.response.data);
+            console.log(error.response.status);
+            console.log(error.response.headers);
+        } else {
+            console.log(error);
         }
     }
-}
+});
 
 async function onReady() {
     window = new BrowserWindow({
@@ -155,11 +157,6 @@ async function onReady() {
     window.loadFile('BrowserWindows/loading.html');
 
     window.webContents.toggleDevTools();
-
-    ipcMain.on('message', (e, { channel, data }) => {        
-        if (channel in preloadMessageHandlers)
-            preloadMessageHandlers[channel](data);
-    });
 
     const loadedConfig = await loadConfig();
 
@@ -178,14 +175,6 @@ async function onReady() {
 }
 
 app.on('ready', onReady);
-
-function emitMessageToWindow(channel, data) {
-    if (window)
-        window.webContents.send('message', {
-            channel,
-            data
-        });
-}
 
 async function loadConfig() {
     const [apiURL, token] = await Promise.all([
