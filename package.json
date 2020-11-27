@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "electron .",
-    "test": "npm run test:main ; npm run test:renderer",
+    "test": "npm run test:main && npm run test:renderer",
     "pg": "electron-packager ./ tc-notifier --all",
     "pgh": "electron-packager --help",
     "c": "rm C:/Users/scooper/AppData/Roaming/tc-notifier/config.json",
